@@ -24,10 +24,9 @@ void PushLFunction( lua_State *state, char *funcName, CFunc func )
 
 int Run( lua_State *state )
 {	
-	void (*pfunc)();
 
 	const char *Function = LUA->GetString( 1 );
-	LPVOID lpAlloc = NULL;
+	void *lpAlloc = NULL;
 	lpAlloc = VirtualAlloc( 0, 4096, MEM_COMMIT, PAGE_EXECUTE_READWRITE);
 
 	if(lpAlloc == NULL){
@@ -36,9 +35,12 @@ int Run( lua_State *state )
 
 	memcpy(lpAlloc, Function, lstrlenA((LPCSTR)Function) + 1);
 
-	pfunc = (void (*)( ))lpAlloc;
-
-	pfunc( );
+	__asm
+	{
+		MOV EAX, lpAlloc
+		CALL EAX
+		RET
+	}
 
 	return 0;
 
